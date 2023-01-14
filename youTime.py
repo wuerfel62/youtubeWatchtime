@@ -1,21 +1,13 @@
-# https://www.googleapis.com/youtube/v3/videos?id=CTiRNnSg0jA&part=contentDetails&key=AIzaSyA_4wkSdey2gajhkZrQ1AoUohiUox9FPic
-
 import urllib.request
 from urllib.error import HTTPError
 import json
 from datetime import timedelta
 import csv
 from datetime import datetime
-from datetime import time
 
 
 def parse_time(str_time):
     str_time = str_time.replace("PT", "")
-
-    # char_list = str_time.split()
-    # for i in reversed(str_time):
-    #     if i == "S":
-    #         s_b = True
 
     time_tmp = ""
     m_t = "0"
@@ -42,22 +34,15 @@ def parse_time(str_time):
 
 
 
-
-#time_all = 0
 def parse_ids():
     ids = []
     with open("watch-history.html", "r", encoding="utf8") as file:
-        #parser.feed(file.read())
         lines = file.readlines()
         count = 0
         for line in lines:
             if line.find('href="https://www.youtube.com/watch?v=') != -1:
                 ids.append(line.split('"')[1].split("=")[1])
                 count += 1
-                # if count == 15:
-                #     break
-        # print(ids[0])
-        # print(count)
         return ids
 def gen_files():
     with open("idsFile.txt", "w") as file:
@@ -85,7 +70,6 @@ def call_api():
         furl = "https://www.googleapis.com/youtube/v3/videos?id="+ url+ "&part=contentDetails&part=snippet&key=" + key
         with urllib.request.urlopen(furl) as url:
             data = json.load(url)
-            # check ob "totalResults" == 1
             try:
                 data_items = data['items'][0]
                 snippet = data_items['snippet']
@@ -103,18 +87,6 @@ def call_api():
                 out_file.write(out_text)
                 counter +=1
 
-            # except HTTPError:
-            #     print("--------------------------------------------")
-
-            # except Exception as e:
-            #     if e == IndexError:
-            #         print(data)
-            #     elif e == HTTPError:
-            #         print("HttpError ________________________________________________")
-            #     else:
-            #         print("Error: " , e)
-
-
             except IndexError:
                 print(data)
             except HTTPError:
@@ -128,7 +100,7 @@ def call_api():
 
 def fix_file():
     with open("dataOut.csv", "r", encoding="utf8") as file_in:
-        with open("dataOuntNew.csv", "w", encoding="utf8") as file_out:
+        with open("dataOutNew.csv", "w", encoding="utf8") as file_out:
             data=file_in.readlines()
             count_char = 0
             count_komma = 0
@@ -158,7 +130,7 @@ def fix_file():
 
 def calc_time():
     time_all = 0
-    with open("dataOuntNew.csv", "r", encoding="utf8") as file:
+    with open("dataOutNew.csv", "r", encoding="utf8") as file:
         data = csv.reader(file, delimiter=",")
         for row in data:
             length = row[3]
@@ -167,14 +139,24 @@ def calc_time():
                 time_all += (pt.second + pt.minute*60 + pt.hour*3600)
     
     print(timedelta(seconds=time_all))
+
+"""
+this function generates the neccesarry files
+"""
 #gen_files()
 
+"""
+this function gets the data from youtube. limited to 10000 requests a day
+"""
 #call_api()
 
+"""
+this function fixes the file -> if the video title has a comma in it it breakes the csv file so they get replaced py dots
+"""
 #fix_file()
 
+"""
+this function outputs the time watched in hours 
+"""
 #calc_time()
 
-# print(time_all)
-
-# print(timedelta(seconds=time_all))
